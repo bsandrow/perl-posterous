@@ -4,6 +4,7 @@ use common::sense;
 use Moose;
 
 use JSON qw/ decode_json /;
+use Carp qw/ croak       /;
 
 use Posterous::Request;
 use URI::URL;
@@ -71,7 +72,7 @@ sub sites
     my $request = Posterous::Request->new(GET => $self->_api_url('sites', $user));
     $request->add_api_token($self->api_token());
 
-    my $response = $eslf->_fetch($request);
+    my $response = $self->_fetch($request);
     return $response;
 }
 
@@ -109,26 +110,46 @@ sub get_site_subscribers
     return $self->_fetch($request);
 }
 
+=head1 FUNCTIONS - POSTS
+=cut
+
+=head2 get_public_posts ( $user, $site, %options )
+
+Fetches all public posts for a site. Valid %options are: 'since_id,' 'page' and
+'tag.' From the Posterous API docs:
+
+    :page     => INT # page number for results set
+    :since_id => INT # retrieve posts created after this id
+    :tag      => String # retrieve posts with this tag
+
+Returns the parsed JSON response from the API or else undef.
+
+=cut
+
 sub get_public_posts
 {
     my ($self, $user, $site, %options) = @_;
     $user ||= 'me';
     $site ||= 'primary';
-    %options = map { $_ => $options{$_} }
-                    grep { $_ eq 'since_id' ||
-                           $_ eq 'page' ||
-                           $_ eq 'tag' } (keys %options);
+    foreach my $opt (keys %options) {
+        croak "Error: $opt is not an option"
+            unless any { "$_" eq "$opt" } ('since_id', 'page', 'tag');
+    }
     my $api_url = $self->_api_url('get_public_posts', $user, $site);
     my $request = Posterous::Request->new(GET => $api_url);
     $request->add_get_pararms(\%options);
     return $self->_fetch($request);
 }
 
+=head2 get_post ($post_id, $user, $site)
+
+=cut
+
 sub get_post
 {
     my ($self, $post_id, $user, $site) = @_;
     croak "Error: get_post requires post_id!" unless $post_id;
-    $user ||= 'me'
+    $user ||= 'me';
     $site ||= 'primary';
     my $request =
         Posterous::Request->new(GET => $self->_api_url('get_post', $user, $site, $post_id));

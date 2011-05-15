@@ -16,3 +16,5 @@ sub add_get_params
     unshift @new_params, $uri->query() if $uri->query();
     $uri->query( join '&', @new_params );
 }
+
+1;
