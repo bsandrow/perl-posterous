@@ -15,7 +15,7 @@ use constant baseurl => 'http://posterous.com';
 has email       => ( is => 'rw', isa => 'Str', required => 1 );
 has password    => ( is => 'rw', isa => 'Str', required => 1 );
 has ua          => ( is => 'ro', isa => 'LWP::UserAgent', builder => '_build_ua');
-has api_token   => ( is => 'rw', isa => 'Str', lazy_build => 1, builder => '_fetch_api_token');
+has api_token   => ( is => 'rw', isa => 'Str', lazy_build => 1, builder => 'fetch_api_token');
 has api_formats => (
     is => 'ro',
     isa => 'HashRef',
@@ -41,17 +41,6 @@ sub _build_api_formats
     }
 }
 
-sub _fetch_api_token
-{
-    my ($self) = @_;
-
-    my $request = Posterous::Request->new(GET => $self->_api_url('auth_token'));
-    $request->authorization_basic($self->email(), $self->password());
-
-    my $response = $self->_fetch($request);
-    return $response->{api_token};
-}
-
 sub _fetch
 {
     my ($self, $request) = @_;
@@ -71,6 +60,17 @@ sub _api_url
 {
     my ($self, $format_id, @params) = @_;
     return baseurl . sprintf($self->get_api_format($format_id), @params);
+}
+
+sub fetch_api_token
+{
+    my ($self) = @_;
+
+    my $request = Posterous::Request->new(GET => $self->_api_url('auth_token'));
+    $request->authorization_basic($self->email(), $self->password());
+
+    my $response = $self->_fetch($request);
+    return $response->{api_token};
 }
 
 sub sites
