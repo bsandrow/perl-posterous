@@ -1,1 +1,7 @@
 .*.sw[pomnq]
+Build
+_build/
+blib/
+MANIFEST
+MANIFEST.bak
+MYMETA.*
