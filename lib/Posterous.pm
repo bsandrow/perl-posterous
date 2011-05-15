@@ -16,19 +16,28 @@ has email       => ( is => 'rw', isa => 'Str', required => 1 );
 has password    => ( is => 'rw', isa => 'Str', required => 1 );
 has ua          => ( is => 'ro', isa => 'LWP::UserAgent', builder => '_build_ua');
 has api_token   => ( is => 'rw', isa => 'Str', lazy_build => 1, builder => '_fetch_api_token');
-has api_formats => ( is => 'ro', isa => 'HashRef', builder => '_build_api_formats');
+has api_formats => (
+    is => 'ro',
+    isa => 'HashRef',
+    builder => '_build_api_formats',
+    traits => ['Hash'],
+    handles => {
+        get_api_format => 'get',
+    },
+);
 
 sub _build_ua { return LWP::UserAgent->new(timeout => 10) }
 
 sub _build_api_formats
 {
     {
-        get_post         => "/api/2/users/%s/sites/%s/posts/%s",
-        get_public_posts => "/api/2/users/%s/sites/%s/posts/public",
-        sites            => "/api/2/users/%s/sites",
-        site             => "/api/2/users/%s/sites/%s",
-        delete_site      => "/api/2/users/%s/sites/%s",
-        get_site_subscribers => "/api/2/users/1/sites/%s/subscribers",
+        auth_token           => '/api/2/auth/token',
+        get_post             => '/api/2/users/%s/sites/%s/posts/%s',
+        get_public_posts     => '/api/2/users/%s/sites/%s/posts/public',
+        sites                => '/api/2/users/%s/sites',
+        site                 => '/api/2/users/%s/sites/%s',
+        delete_site          => '/api/2/users/%s/sites/%s',
+        get_site_subscribers => '/api/2/users/1/sites/%s/subscribers',
     }
 }
 
@@ -36,7 +45,7 @@ sub _fetch_api_token
 {
     my ($self) = @_;
 
-    my $request = Posterous::Request->new(GET => 'http://posterous.com/api/2/auth/token');
+    my $request = Posterous::Request->new(GET => $self->_api_url('auth_token'));
     $request->authorization_basic($self->email(), $self->password());
 
     my $response = $self->_fetch($request);
@@ -61,7 +70,7 @@ sub _fetch
 sub _api_url
 {
     my ($self, $format_id, @params) = @_;
-    return baseurl . sprintf($self->api_formats($format_id), @params);
+    return baseurl . sprintf($self->get_api_format($format_id), @params);
 }
 
 sub sites
