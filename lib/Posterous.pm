@@ -26,6 +26,12 @@ has api_formats => (
     },
 );
 
+=head1 NAME
+
+Posterous - API access to posterous.com
+
+=cut
+
 sub _build_ua { return LWP::UserAgent->new(timeout => 10) }
 
 sub _build_api_formats
@@ -102,9 +108,15 @@ sub sites
     my $request = Posterous::Request->new(GET => $self->_api_url('sites', $user));
     $request->add_api_token($self->api_token());
 
-    my $response = $self->_fetch($request);
-    return $response;
+    return $self->_fetch($request);
 }
+
+=head2 site ( $user, $site )
+
+Returns a structured dataset for the specificed user/site combination. $user
+defaults to the shortcut 'me' and $site defaults to the shortcut 'primary.'
+
+=cut
 
 sub site
 {
@@ -115,8 +127,7 @@ sub site
     my $request = Posterous::Request->new(GET => $self->_api_url('site', $user, $site));
     $request->add_api_token($self->api_token());
 
-    my $response = $self->_fetch($request);
-    return $response;
+    return $self->_fetch($request);
 }
 
 sub delete_site
