@@ -62,6 +62,19 @@ sub _api_url
     return baseurl . sprintf($self->get_api_format($format_id), @params);
 }
 
+=head1 POSTEROUS API FUNCTIONS
+
+=cut
+
+=head2 fetch_api_token
+
+Uses the email-password combination to grab an API access token from the
+Posterous API. Rather than directly passing back the JSON-parsed structure,
+pulls the api_token out of it (and therefore will return undef if it's not
+there).
+
+=cut
+
 sub fetch_api_token
 {
     my ($self) = @_;
@@ -72,6 +85,14 @@ sub fetch_api_token
     my $response = $self->_fetch($request);
     return $response->{api_token};
 }
+
+=head2 sites ( $user )
+
+Returns a list of data structures that each represents a site that is
+associated with the specified user. $user defaults to 'me' (which is a shortcut
+for the currently authorized user).
+
+=cut
 
 sub sites
 {
