@@ -21,4 +21,19 @@ sub add_get_params
     $uri->query( join '&', @new_params );
 }
 
+sub add_post_params
+{
+    my ($self, $content) = @_;
+
+    # Ripped from HTTP::Request::Common::POST()
+    require URI;
+    my $url = URI->new('http:');
+    $url->query_form(ref($content) eq "HASH" ? %$content : @$content);
+    $content = $url->query;
+
+    $self->header('Content-Type' => 'application/x-www-form-urlencoded');
+    $self->header('Content-Length' => length($content)) unless ref($content);
+    $self->content($content);
+}
+
 1;

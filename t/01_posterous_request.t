@@ -1,4 +1,4 @@
-use Test::Simple tests => 6;
+use Test::Simple tests => 9;
 use Posterous::Request;
 
 use vars qw($request $result);
@@ -58,5 +58,34 @@ use vars qw($request $result);
     ok(
         $result eq "http://posterous.com/?var=value&api_token=TOKEN%20BLAH",
         'api_token value is URI escaped'
+    );
+}
+
+########################################
+#### Posterous::Request::add_post_params()
+####
+{
+    $request = Posterous::Request->new(POST => 'http://posterous.com/');
+    $request->add_post_params({ test => '123' });
+    $result = $request->content();
+    ok(
+        $result eq "test=123",
+        'add_post_params() works in the base case'
+    );
+
+    $request = Posterous::Request->new(POST => 'http://posterous.com/');
+    $request->add_post_params({ '123' => '345', test => '123'});
+    $result = $request->content();
+    ok(
+        $result eq "123=345&test=123",
+        "add_post_params() works for multiple keys"
+    );
+
+    $request = Posterous::Request->new(POST => 'http://posterous.com/');
+    $request->add_post_params({ test => '123', '12#4' => '3 & 5' });
+    $result = $request->content();
+    ok(
+        $result eq "test=123&12%234=3+%26+5",
+        'add_post_params() escapes special characters'
     );
 }
