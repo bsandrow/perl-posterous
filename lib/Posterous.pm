@@ -195,7 +195,7 @@ Delete the site specified by $site and $user. $user defaults to 'me,' but $site
 is required. I feel that it would be too easy to accidentally perform an
 unintented destructive operation if $site defaulted to 'primary.' (And it would
 be especially destructive because, presumably, you primary site is the most
-important one to you).
+important one to you). $site can either be the site id or hostname.
 
 Returns a boolean depending on whether or not the site was successfully deleted.
 =cut
