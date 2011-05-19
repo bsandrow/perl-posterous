@@ -68,7 +68,7 @@ sub _api_url
     return baseurl . sprintf($self->get_api_format($format_id), @params);
 }
 
-=head1 POSTEROUS API FUNCTIONS
+=head1 POSTEROUS API: AUTH
 
 =cut
 
@@ -91,6 +91,10 @@ sub fetch_api_token
     my $response = $self->_fetch($request);
     return $response->{api_token};
 }
+
+=head1 POSTEROUS API: SITES
+
+=cut
 
 =head2 sites ( $user )
 
@@ -127,6 +131,57 @@ sub site
     my $request = Posterous::Request->new(GET => $self->_api_url('site', $user, $site));
     $request->add_api_token($self->api_token());
 
+    return $self->_fetch($request);
+}
+
+=head2 create_site ( %options )
+
+Creates a posterous site for a particular user.
+
+Options:
+    name        The name of the site (required)
+    is_private  A boolean describing if the site if private or not. (default: 0)
+    hostname    The sub-domain part of the full domain (e.g.
+                {hostname}.posterous.com)
+    user        The user to create the site for. (default: me)
+
+Returns a data structure like:
+
+    {
+        "name"              : "twoism's posterous",
+        "is_private"        : false,
+        "full_hostname"     : "twoism.posterous.com",
+        "posts_count"       : 224,
+        "id"                : 1752789,
+        "comment_permission": 2,
+        "posts_url"         : "/api/2/users/637118/sites/1752789/posts"
+    }
+
+=cut
+
+sub create_site
+{
+    my $self = shift;
+    my %options = (
+        user        => 'me',
+        is_private  => 0,
+        name        => undef,
+        hostname    => undef,
+        @_
+    );
+
+    croak "create_site() requires a name"     unless $options{name};
+    croak "create_site() requires a hostname" unless $options{hostname};
+
+    my $request = Posterous::Request->new(
+        POST => sprintf("%s/api/2/users/%s/sites", baseurl, $options{user})
+    );
+    $request->add_api_token($self->api_token());
+    $request->add_post_params({
+        name        => $options{name},
+        is_private  => $options{is_private},
+        hostname    => $options{hostname},
+    });
     return $self->_fetch($request);
 }
 
