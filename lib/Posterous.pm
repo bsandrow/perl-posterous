@@ -189,15 +189,27 @@ sub create_site
     return $self->_fetch($request);
 }
 
+=head2 delete_site ( $site, $user )
+
+Delete the site specified by $site and $user. $user defaults to 'me,' but $site
+is required. I feel that it would be too easy to accidentally perform an
+unintented destructive operation if $site defaulted to 'primary.' (And it would
+be especially destructive because, presumably, you primary site is the most
+important one to you).
+
+Returns a boolean depending on whether or not the site was successfully deleted.
+=cut
+
 sub delete_site
 {
     my ($self, $site, $user) = @_;
     croak "Error: delete_site requests a site to delete!" unless $site;
     $user ||= 'me';
-    my $api_url = $self->_api_url('delete_site', $user, $site);
-    my $request = Posterous::Request->new(DELETE => $api_url);
+    my $request = Posterous::Request->new(
+        DELETE => sprintf("%s/api/2/users/%s/sites/%s", baseurl, $user, $site)
+    );
     $request->add_api_token($self->api_token());
-    return $self->_fetch($request);
+    return defined($self->_fetch($request));
 }
 
 sub get_site_subscribers
@@ -287,10 +299,6 @@ to 'me' and $site defaults to 'primary.'
 
 =head2 delete_site ($site, $user)
 
-Delete the site specified by $site and $user. $user defaults to 'me,' but $site
-is required because it would be 'dangerous' to just allow it to default to
-'primary.' Auto-magically deleteing your primary site is probably a Bad
-Thing (tm).
 
 =head2 get_site_subscribers ($site)
 

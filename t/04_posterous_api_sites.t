@@ -1,4 +1,4 @@
-use Test::More tests => 25;
+use Test::More tests => 35;
 use Try::Tiny;
 use Posterous;
 
@@ -159,4 +159,61 @@ use Posterous;
     ok($content =~ m/(^|&)name=test_site(&|$)/,
         "create_site() adds name to POST data");
 
+}
+
+########################################
+#### Posterous::delete_site()
+####
+{
+    no warnings 'redefine';
+
+    my $request;
+    my $fetch_result = { some_structure => 'goes here' };
+    local *Posterous::_fetch = sub {
+        $request = $_[1];
+        return $fetch_result;
+    };
+    my $api_token_was_called = 0;
+    local *Posterous::api_token = sub {
+        $api_token_was_called = 1;
+        return 'API_TOKEN_GOES_HERE';
+    };
+    my $api = Posterous->new(email => 'test@example.com', password => 'pass');
+
+    my $died = 0;
+    try     { $api->delete_site(); }
+    catch   { $died = 1; }
+    finally { ok($died, 'delete_site() dies without a site'); };
+
+    $died = 0;
+    try     { $api->delete_site('site'); }
+    catch   { $died = 1; }
+    finally { ok(!$died, 'delete_site() doesn\'t die when a site is provided'); };
+
+    $api->delete_site('test_site');
+    ok($request->method() eq 'DELETE',
+        "delete_site() uses HTTP DELETE");
+
+    my $url = $request->uri()->as_string();
+    ok($url =~ m[^http://posterous\.com/],
+        'delete_site() uses the correct baseurl');
+    ok($url =~ m{/api/2/users/[^/]+/sites/[^/]+(\?|$)},
+        'delete_site() uses the correct api url');
+    ok($url =~ m{/api/2/users/me/sites/[^/]+(\?|$)},
+        'delete_site() defaults user to \'me\'');
+    ok($url =~ m{/api/2/users/[^/]+/sites/test_site(\?|$)},
+        'delete_site() passes site id through correctly');
+
+    $api->delete_site('test_site_2','my_user');
+    $url = $request->uri()->as_string();
+    ok($url =~ m{/api/2/users/my_user/sites/test_site_2(\?|$)},
+        'delete_site() passes the user value through correctly');
+
+    my $result = $api->delete_site('site1');
+    ok($result, "delete_site() returns a truthy value on success");
+    $fetch_result = undef;
+    $result = $api->delete_site('site2');
+    ok(!$result, "delete_site() returns a falsey value on failure");
+
+    # TODO test the returned result for delete_site()
 }
