@@ -85,7 +85,7 @@ sub fetch_api_token
 {
     my ($self) = @_;
 
-    my $request = Posterous::Request->new(GET => $self->_api_url('auth_token'));
+    my $request = Posterous::Request->new(GET => sprintf("%s/api/2/auth/token", baseurl));
     $request->authorization_basic($self->email(), $self->password());
 
     my $response = $self->_fetch($request);
@@ -109,7 +109,9 @@ sub sites
     my ($self, $user) = @_;
     $user ||= 'me';
 
-    my $request = Posterous::Request->new(GET => $self->_api_url('sites', $user));
+    my $request = Posterous::Request->new(
+        GET => sprintf("%s/api/2/users/%s/sites", baseurl, $user)
+    );
     $request->add_api_token($self->api_token());
 
     return $self->_fetch($request);
@@ -128,7 +130,9 @@ sub site
     $user ||= 'me';
     $site ||= 'primary';
 
-    my $request = Posterous::Request->new(GET => $self->_api_url('site', $user, $site));
+    my $request = Posterous::Request->new(
+        GET => sprintf("%s/api/2/users/%s/sites/%s", baseurl, $user, $site)
+    );
     $request->add_api_token($self->api_token());
 
     return $self->_fetch($request);
