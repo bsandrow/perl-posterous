@@ -220,17 +220,30 @@ sub delete_site
     return defined($self->_fetch($request));
 }
 
+=head2 get_site_subscribers ( $user, $site )
+
+Fetch the list of subscribers to $site for $user. $user defaults to 'me' and
+$site defaults to 'primary.' $site can either be a hostname or site id.
+
+=cut
+
 sub get_site_subscribers
 {
-    my ($self, $site) = @_;
+    my ($self, $user, $site) = @_;
+
+    # XXX What's with the /api/2/users/1/sites stuff? Why '1' instead of 'me' as
+    # an alias for the current user?
+
+    $user ||= 'me';
     $site ||= 'primary';
-    my $api_url = $self->_api_url('get_site_subscribers', $site);
-    my $request = Posterous::Request->new(GET => $api_url);
-    $request->add_api_token($self->api_token());
+    my $request = Posterous::Request->new(
+        GET => sprintf("%s/api/2/users/%s/sites/%s/subscribers", baseurl, $user, $site)
+    );
+    $self->_prepare_request($request);
     return $self->_fetch($request);
 }
 
-=head1 FUNCTIONS - POSTS
+=head1 POSTEROUS API: POSTS
 =cut
 
 =head2 get_public_posts ( $user, $site, %options )
@@ -242,84 +255,27 @@ Fetches all public posts for a site. Valid %options are: 'since_id,' 'page' and
     :since_id => INT # retrieve posts created after this id
     :tag      => String # retrieve posts with this tag
 
-Returns the parsed JSON response from the API or else undef.
+'page' defaults to 1. Returns the parsed JSON response from the API or else
+undef.
 
 =cut
 
 sub get_public_posts
 {
-    my ($self, $user, $site, %options) = @_;
+    my ($self, $user, $site) = (shift, shift, shift);
+    my %options = (page => 1, @_);
     $user ||= 'me';
     $site ||= 'primary';
-    foreach my $opt (keys %options) {
-        croak "Error: $opt is not an option"
-            unless any { "$_" eq "$opt" } ('since_id', 'page', 'tag');
-    }
-    my $api_url = $self->_api_url('get_public_posts', $user, $site);
-    my $request = Posterous::Request->new(GET => $api_url);
+
+    my $request = Posterous::Request->new(
+        GET => sprintf('%s/api/2/users/%s/sites/%s/posts/public', baseurl, $user, $site)
+    );
+    # XXX Do I need this here? I think this call requires no auth
+    $self->_prepare_request($request);
     $request->add_get_pararms(\%options);
-    return $self->_fetch($request);
-}
-
-=head2 get_post ($post_id, $user, $site)
-
-=cut
-
-sub get_post
-{
-    my ($self, $post_id, $user, $site) = @_;
-    croak "Error: get_post requires post_id!" unless $post_id;
-    $user ||= 'me';
-    $site ||= 'primary';
-    my $request =
-        Posterous::Request->new(GET => $self->_api_url('get_post', $user, $site, $post_id));
-    $request->add_api_token($self->api_token());
     return $self->_fetch($request);
 }
 
 __PACKAGE__->meta()->make_immutable();
 
 1;
-
-=head1 ATTRIBUTES
-
-=head2 api_token
-
-This is an attribute that lazy builds itself by pinging the Posterous API for
-the api_token. This is mostly for internal use, but if you want to do something
-like control B<when> the auth token is fetched, just accessing this attribute
-will trigger that (the first time it's accessed).
-
-=head1 FUNCTIONS
-
-All functions are just wrappers around Posterous API calls that parse out the
-returned JSON and return the data structures.
-
-=head2 sites ($user)
-
-Returns a list of dumps for all sites that a specific user has. $user defaults
-to 'me.'
-
-=head2 site ($user, $site)
-
-Returns a dump of data about a specific user/site combination. $user defaults
-to 'me' and $site defaults to 'primary.'
-
-=head2 delete_site ($site, $user)
-
-
-=head2 get_site_subscribers ($site)
-
-Fetches the list of subscribers to the specified site.
-
-=head2 subscribe_to_site ($site)
-
-From the API documentation, "This will add the given site to the current users
-subscriptions." $site defaults to 'primary.'
-
-=head2 unsubscribe_site ($site)
-
-From the API documentation: "This will remove the given site to the current
-users subscriptions." $site defaults to 'primary.'
-
-=cut
