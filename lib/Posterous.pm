@@ -120,7 +120,7 @@ sub sites
     my $request = Posterous::Request->new(
         GET => sprintf("%s/api/2/users/%s/sites", baseurl, $user)
     );
-    $request->add_api_token($self->api_token());
+    $self->_prepare_request($request);
 
     return $self->_fetch($request);
 }
@@ -141,7 +141,7 @@ sub site
     my $request = Posterous::Request->new(
         GET => sprintf("%s/api/2/users/%s/sites/%s", baseurl, $user, $site)
     );
-    $request->add_api_token($self->api_token());
+    $self->_prepare_request($request);
 
     return $self->_fetch($request);
 }
@@ -188,7 +188,7 @@ sub create_site
     my $request = Posterous::Request->new(
         POST => sprintf("%s/api/2/users/%s/sites", baseurl, $options{user})
     );
-    $request->add_api_token($self->api_token());
+    $self->_prepare_request($request);
     $request->add_post_params({
         name        => $options{name},
         is_private  => $options{is_private},
@@ -216,7 +216,7 @@ sub delete_site
     my $request = Posterous::Request->new(
         DELETE => sprintf("%s/api/2/users/%s/sites/%s", baseurl, $user, $site)
     );
-    $request->add_api_token($self->api_token());
+    $self->_prepare_request($request);
     return defined($self->_fetch($request));
 }
 
