@@ -62,6 +62,14 @@ sub _fetch
     return decode_json $response->content();
 }
 
+sub _prepare_request
+{
+    my ($self, $request) = (shift, shift);
+    my %options = (no_auth  => 0, no_token => 0, @_);
+    $request->authorization_basic($self->email(), $self->password()) unless $options{no_auth};
+    $request->add_api_token($self->api_token()) unless $options{no_token};
+}
+
 sub _api_url
 {
     my ($self, $format_id, @params) = @_;
