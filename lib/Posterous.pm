@@ -94,7 +94,7 @@ sub fetch_api_token
     my ($self) = @_;
 
     my $request = Posterous::Request->new(GET => sprintf("%s/api/2/auth/token", baseurl));
-    $request->authorization_basic($self->email(), $self->password());
+    $self->_prepare_request($request, no_token => 1);
 
     my $response = $self->_fetch($request);
     return $response->{api_token};
