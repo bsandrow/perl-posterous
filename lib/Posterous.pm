@@ -132,7 +132,7 @@ sub get_site_subscribers
     # XXX The couple of times I've tried this api call against the live site,
     # I've gotten back 500 errors. Maybe I should contact them about this.
 
-    $user ||= 'me';
+    $user ||= '1';
     $site ||= 'primary';
     my $request = Posterous::Request->new(
         GET => sprintf("%s/api/2/users/%s/sites/%s/subscribers", baseurl, $user, $site)

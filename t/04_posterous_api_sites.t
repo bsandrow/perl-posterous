@@ -1,4 +1,4 @@
-use Test::More tests => 35;
+use Test::More tests => 40;
 use Try::Tiny;
 use Posterous;
 
@@ -216,4 +216,42 @@ use Posterous;
     ok(!$result, "delete_site() returns a falsey value on failure");
 
     # TODO test the returned result for delete_site()
+}
+
+########################################
+#### Posterous::get_site_subscribers()
+####
+{
+    no warnings 'redefine';
+
+    my $request;
+    my $fetch_return = { retval => 666 };
+    local *Posterous::_fetch = sub { $request = $_[1]; return $fetch_return };
+    local *Posterous::api_token = sub { return 'aPiToKeN' };
+
+    my $api = Posterous->new(email => 'test@example.com', 'password' => 'tru');
+
+    $api->get_site_subscribers();
+    ok($request->uri()->path() eq '/api/2/users/1/sites/primary/subscribers',
+        'get_site_subscribers() uses correct defaults (user => 1, site => primary)');
+
+    $api->get_site_subscribers('krang', 'shredder');
+    ok($request->uri()->path() eq '/api/2/users/krang/sites/shredder/subscribers',
+        'get_site_subscribers() correctly inserts user and site values into request url');
+
+    $api->get_site_subscribers();
+    ok($request->header('Authorization'),
+        'get_site_subscribers() sets the "Authorization: " header');
+
+    $api->get_site_subscribers();
+    ok($request->uri()->query() eq 'api_token=aPiToKeN',
+        'get_site_subscribers() sets the api token on the request');
+
+    $fetch_return = [ 'testing', 'passthru', 'of', '_fetch()', 'return', 'value' ];
+    my $result = $api->get_site_subscribers();
+    is_deeply(
+        $result,
+        [ 'testing', 'passthru', 'of', '_fetch()', 'return', 'value' ],
+        "Testing that get_site_subscribers is passing through _fetch() return val"
+    );
 }
