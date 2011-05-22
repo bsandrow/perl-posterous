@@ -1,0 +1,19 @@
+=head1 NAME
+
+perl-posterous - Perl Posterous API Library
+
+=head1 DESCRIPTION
+
+A Perl library for accessing the Posterous API. Initial conception because I
+wanted a way to make sure that I could backup all of the data that I would be
+putting into the system if I started using Posterous for blogging.
+
+=head1 LICENSE
+
+MIT Licensed. See LICENSE file.
+
+=head1 AUTHOR
+
+Brandon Sandrowicz <bsandrow@gmail.com>
+
+=cut
