@@ -17,12 +17,6 @@ has password    => ( is => 'rw', isa => 'Str', required => 1 );
 has ua          => ( is => 'ro', isa => 'LWP::UserAgent', builder => '_build_ua');
 has api_token   => ( is => 'rw', isa => 'Str', lazy_build => 1, builder => 'fetch_api_token');
 
-=head1 NAME
-
-Posterous - API access to posterous.com
-
-=cut
-
 sub _build_ua { return LWP::UserAgent->new(timeout => 10) }
 
 sub _fetch
@@ -48,41 +42,18 @@ sub _prepare_request
     $request->add_api_token($self->api_token()) unless $options{no_token};
 }
 
-=head1 POSTEROUS API: AUTH
-
-=cut
-
-=head2 fetch_api_token
-
-Uses the email-password combination to grab an API access token from the
-Posterous API. Rather than directly passing back the JSON-parsed structure,
-pulls the api_token out of it (and therefore will return undef if it's not
-there).
-
-=cut
-
 sub fetch_api_token
 {
     my ($self) = @_;
 
-    my $request = Posterous::Request->new(GET => sprintf("%s/api/2/auth/token", baseurl));
+    my $request = Posterous::Request->new(
+        GET => sprintf("%s/api/2/auth/token", baseurl)
+    );
     $self->_prepare_request($request, no_token => 1);
 
     my $response = $self->_fetch($request);
     return $response->{api_token};
 }
-
-=head1 POSTEROUS API: SITES
-
-=cut
-
-=head2 sites ( $user )
-
-Returns a list of data structures that each represents a site that is
-associated with the specified user. $user defaults to 'me' (which is a shortcut
-for the currently authorized user).
-
-=cut
 
 sub sites
 {
@@ -97,13 +68,6 @@ sub sites
     return $self->_fetch($request);
 }
 
-=head2 site ( $user, $site )
-
-Returns a structured dataset for the specificed user/site combination. $user
-defaults to the shortcut 'me' and $site defaults to the shortcut 'primary.'
-
-=cut
-
 sub site
 {
     my ($self, $user, $site) = @_;
@@ -117,32 +81,6 @@ sub site
 
     return $self->_fetch($request);
 }
-
-=head2 create_site ( %options )
-
-Creates a posterous site for a particular user.
-
-Options:
-
-    name        The name of the site (required)
-    is_private  A boolean describing if the site if private or not. (default: 0)
-    hostname    The sub-domain part of the full domain (e.g.
-                {hostname}.posterous.com)
-    user        The user to create the site for. (default: me)
-
-Returns a data structure like:
-
-    {
-        "name"              : "twoism's posterous",
-        "is_private"        : false,
-        "full_hostname"     : "twoism.posterous.com",
-        "posts_count"       : 224,
-        "id"                : 1752789,
-        "comment_permission": 2,
-        "posts_url"         : "/api/2/users/637118/sites/1752789/posts"
-    }
-
-=cut
 
 sub create_site
 {
@@ -170,17 +108,6 @@ sub create_site
     return $self->_fetch($request);
 }
 
-=head2 delete_site ( $site, $user )
-
-Delete the site specified by $site and $user. $user defaults to 'me,' but $site
-is required. I feel that it would be too easy to accidentally perform an
-unintented destructive operation if $site defaulted to 'primary.' (And it would
-be especially destructive because, presumably, you primary site is the most
-important one to you). $site can either be the site id or hostname.
-
-Returns a boolean depending on whether or not the site was successfully deleted.
-=cut
-
 sub delete_site
 {
     my ($self, $site, $user) = @_;
@@ -192,13 +119,6 @@ sub delete_site
     $self->_prepare_request($request);
     return defined($self->_fetch($request));
 }
-
-=head2 get_site_subscribers ( $user, $site )
-
-Fetch the list of subscribers to $site for $user. $user defaults to 'me' and
-$site defaults to 'primary.' $site can either be a hostname or site id.
-
-=cut
 
 sub get_site_subscribers
 {
@@ -218,23 +138,6 @@ sub get_site_subscribers
     $self->_prepare_request($request);
     return $self->_fetch($request);
 }
-
-=head1 POSTEROUS API: POSTS
-=cut
-
-=head2 get_public_posts ( $user, $site, %options )
-
-Fetches all public posts for a site. Valid %options are: 'since_id,' 'page' and
-'tag.' From the Posterous API docs:
-
-    :page     => INT # page number for results set
-    :since_id => INT # retrieve posts created after this id
-    :tag      => String # retrieve posts with this tag
-
-'page' defaults to 1. Returns the parsed JSON response from the API or else
-undef.
-
-=cut
 
 sub get_public_posts
 {
@@ -256,3 +159,84 @@ sub get_public_posts
 __PACKAGE__->meta()->make_immutable();
 
 1;
+
+=head1 NAME
+
+Posterous - API access to posterous.com
+
+=head1 POSTEROUS API: AUTH
+
+=head2 fetch_api_token
+
+Uses the email-password combination to grab an API access token from the
+Posterous API. Rather than directly passing back the JSON-parsed structure,
+pulls the api_token out of it (and therefore will return undef if it's not
+there).
+
+=head1 POSTEROUS API: SITES
+
+=head2 sites ( $user )
+
+Returns a list of data structures that each represents a site that is
+associated with the specified user. $user defaults to 'me' (which is a shortcut
+for the currently authorized user).
+
+=head2 site ( $user, $site )
+
+Returns a structured dataset for the specificed user/site combination. $user
+defaults to the shortcut 'me' and $site defaults to the shortcut 'primary.'
+
+=head2 create_site ( %options )
+
+Creates a posterous site for a particular user.
+
+Options:
+
+    name        The name of the site (required)
+    is_private  A boolean describing if the site if private or not. (default: 0)
+    hostname    The sub-domain part of the full domain (e.g.
+                {hostname}.posterous.com)
+    user        The user to create the site for. (default: me)
+
+Returns a data structure like:
+
+    {
+        "name"              : "twoism's posterous",
+        "is_private"        : false,
+        "full_hostname"     : "twoism.posterous.com",
+        "posts_count"       : 224,
+        "id"                : 1752789,
+        "comment_permission": 2,
+        "posts_url"         : "/api/2/users/637118/sites/1752789/posts"
+    }
+
+=head2 delete_site ( $site, $user )
+
+Delete the site specified by $site and $user. $user defaults to 'me,' but $site
+is required. I feel that it would be too easy to accidentally perform an
+unintented destructive operation if $site defaulted to 'primary.' (And it would
+be especially destructive because, presumably, you primary site is the most
+important one to you). $site can either be the site id or hostname.
+
+Returns a boolean depending on whether or not the site was successfully deleted.
+
+=head2 get_site_subscribers ( $user, $site )
+
+Fetch the list of subscribers to $site for $user. $user defaults to 'me' and
+$site defaults to 'primary.' $site can either be a hostname or site id.
+
+=head1 POSTEROUS API: POSTS
+
+=head2 get_public_posts ( $user, $site, %options )
+
+Fetches all public posts for a site. Valid %options are: 'since_id,' 'page' and
+'tag.' From the Posterous API docs:
+
+    :page     => INT # page number for results set
+    :since_id => INT # retrieve posts created after this id
+    :tag      => String # retrieve posts with this tag
+
+'page' defaults to 1. Returns the parsed JSON response from the API or else
+undef.
+
+=cut
