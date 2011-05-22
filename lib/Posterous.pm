@@ -123,6 +123,7 @@ sub site
 Creates a posterous site for a particular user.
 
 Options:
+
     name        The name of the site (required)
     is_private  A boolean describing if the site if private or not. (default: 0)
     hostname    The sub-domain part of the full domain (e.g.
@@ -206,6 +207,9 @@ sub get_site_subscribers
     # XXX What's with the /api/2/users/1/sites stuff? Why '1' instead of 'me' as
     # an alias for the current user?
 
+    # XXX The couple of times I've tried this api call against the live site,
+    # I've gotten back 500 errors. Maybe I should contact them about this.
+
     $user ||= 'me';
     $site ||= 'primary';
     my $request = Posterous::Request->new(
@@ -242,6 +246,7 @@ sub get_public_posts
     my $request = Posterous::Request->new(
         GET => sprintf('%s/api/2/users/%s/sites/%s/posts/public', baseurl, $user, $site)
     );
+
     # XXX Do I need this here? I think this call requires no auth
     $self->_prepare_request($request);
     $request->add_get_pararms(\%options);
