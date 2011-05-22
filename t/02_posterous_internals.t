@@ -26,10 +26,7 @@ use HTTP::Response;
     local *LWP::UserAgent::request = sub {
         $ua_request_called = 1;
         $request_passed_in = $_[1];
-        my $response = HTTP::Response->new();
-        $response->{_rc} = $status_code;
-        $response->{_content} = $content;
-        return $response;
+        return HTTP::Response->new($status_code, '', HTTP::Headers->new(), $content);
     };
 
     my $request = Posterous::Request->new(GET => 'http://example.com');
