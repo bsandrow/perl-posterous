@@ -16,7 +16,7 @@ has email       => ( is => 'rw', isa => 'Str', required => 1 );
 has password    => ( is => 'rw', isa => 'Str', required => 1 );
 has ua          => ( is => 'ro', isa => 'LWP::UserAgent', builder => '_build_ua');
 has api_token   => ( is => 'rw', isa => 'Str', lazy_build => 1, builder => 'fetch_api_token');
-has last_response=>( is => 'rw', isa => 'HTTP::Response' };
+has last_response=>( is => 'rw', isa => 'HTTP::Response' );
 
 sub _build_ua { return LWP::UserAgent->new(timeout => 10) }
 
