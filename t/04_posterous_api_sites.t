@@ -1,4 +1,4 @@
-use Test::More tests => 43;
+use Test::More tests => 46;
 use Try::Tiny;
 use Posterous;
 
@@ -280,4 +280,30 @@ use Posterous;
     $api->subscribe_to_site('test-site-2', 'test-user');
     ok($request->uri()->path() eq '/api/2/users/test-user/sites/test-site-2/subscribe',
         'subscribe_to_site() $site options overrides default of "primary" and $user option overrides default of "1"');
+}
+
+########################################
+#### Posterous::unsubscribe_to_site()
+####
+{
+    no warnings 'redefine';
+
+    my $request;
+    my $fetch_return = { retval => 666 };
+    local *Posterous::_fetch = sub { $request = $_[1]; return $fetch_return };
+    local *Posterous::api_token = sub { return 'aPiToKeN' };
+
+    my $api = Posterous->new(email => 'test@example.com', 'password' => 'tru');
+
+    $api->unsubscribe_from_site();
+    ok($request->uri()->path() eq '/api/2/users/1/sites/primary/unsubscribe',
+        'unsubscribe_from_site() defaults $user to "1" and $site to "primary"');
+
+    $api->unsubscribe_from_site('test-site');
+    ok($request->uri()->path() eq '/api/2/users/1/sites/test-site/unsubscribe',
+        'unsubscribe_from_site() $site options overrides default of "primary"');
+
+    $api->unsubscribe_from_site('test-site-2', 'test-user');
+    ok($request->uri()->path() eq '/api/2/users/test-user/sites/test-site-2/unsubscribe',
+        'unsubscribe_from_site() $site options overrides default of "primary" and $user option overrides default of "1"');
 }

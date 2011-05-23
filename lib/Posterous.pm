@@ -153,6 +153,18 @@ sub subscribe_to_site
     return $self->_fetch($request);
 }
 
+sub unsubscribe_from_site
+{
+    my ($self, $site, $user) = @_;
+    $user ||= '1';
+    $site ||= 'primary';
+    my $request = Posterous::Request->new(
+        GET => sprintf("%s/api/2/users/$user/sites/$site/unsubscribe", baseurl, $user, $site)
+    );
+    $self->_prepare_request($request);
+    return $self->_fetch($request);
+}
+
 sub get_public_posts
 {
     my $self = shift;
@@ -250,6 +262,13 @@ site), so you should probably specify a $site. $user defaults to '1,' and the
 Posterous API docs don't specify whether or not a user option is acceptable. It
 probably isn't, but I'm leaving the $user option in just in case the API
 changes in the future.
+
+=head2 unsubscribe_from_site ( $site, $user )
+
+Unsubscribes the current user from the specified site. $site defaults to
+'primary,' though you'll probably just want to set this to something. $user is
+just here for added flexibility, and is not indended to be used at this time.
+$user defaults to '1' (which is the only documented value in the API docs).
 
 =head1 POSTEROUS API: POSTS
 
