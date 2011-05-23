@@ -1,4 +1,4 @@
-use Test::More tests => 4;
+use Test::More tests => 8;
 use Try::Tiny;
 use Posterous;
 
@@ -33,4 +33,18 @@ use Posterous;
         \%actual_params,
         \%expected_params,
         'get_public_posts() correctly handles optional params');
+
+    $api->get_public_posts(noauth => 1, user => 'qwerty');
+    ok($request->uri()->path() eq '/api/2/users/qwerty/sites/primary/posts/public',
+        'get_public_posts() uses correct path when noauth is true');
+    ok(!$request->header('Authentication'),
+        'get_public_posts() adds no auth header when noauth is true');
+    ok($request->uri()->query() eq 'page=1',
+        'get_public_posts() adds no api_token when noauth is true');
+
+    my $croaked = 0;
+    try     { $api->get_public_posts(noauth => 1)   }
+    catch   { $croaked = 1                          };
+    ok($croaked,
+        'get_public_posts() croaks when noauth is true, but user is "me"');
 }

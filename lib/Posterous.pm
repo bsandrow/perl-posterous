@@ -169,18 +169,22 @@ sub get_public_posts
 {
     my $self = shift;
     my %opts = (
+        noauth => 0,
         page => 1,
         @_
     );
     my $site = delete($opts{site}) || 'primary';
     my $user = delete($opts{user}) || 'me';
 
+    croak "'user = me' makes no sense if with no authentication."
+        if $user eq 'me' && $opts{noauth};
+
     my $request = Posterous::Request->new(
         GET => sprintf('%s/api/2/users/%s/sites/%s/posts/public', baseurl, $user, $site)
     );
 
-    # XXX Do I need this here? I think this call requires no auth
-    $self->_prepare_request($request);
+    $self->_prepare_request($request) unless delete $opts{noauth};
+
     $request->add_get_params(\%opts);
     return $self->_fetch($request);
 }
@@ -272,16 +276,42 @@ $user defaults to '1' (which is the only documented value in the API docs).
 
 =head1 POSTEROUS API: POSTS
 
-=head2 get_public_posts ( $user, $site, %options )
+=head2 get_public_posts ( %options )
 
-Fetches all public posts for a site. Valid %options are: 'since_id,' 'page' and
-'tag.' From the Posterous API docs:
+Fetches all public posts for a site. %options are:
 
-    :page     => INT # page number for results set
-    :since_id => INT # retrieve posts created after this id
-    :tag      => String # retrieve posts with this tag
+=over 3
 
-'page' defaults to 1. Returns the parsed JSON response from the API or else
-undef.
+=item noauth
+
+Controls whether or not the API request will be (or attempt to be)
+authenticated. Since this API call doesn't require authentication (the posts
+are I<public> after all), this allows access to this API call without any auth
+info. Defaults to 0.
+
+=item user
+
+The user whose site to fetch posts from. Defaults to 'me' if authenticating,
+otherwise requires a value.
+
+=item site
+
+The site to fetch posts from. Defaults to 'primary.'
+
+=item page
+
+The page number for the results set. Defaults to 1.
+
+=item since_id
+
+Retrieve posts created after this id
+
+=item tag
+
+Retrieve posts with this tag
+
+=back
+
+Returns the parsed JSON returned from the API. Otherwise, returns undef.
 
 =cut
