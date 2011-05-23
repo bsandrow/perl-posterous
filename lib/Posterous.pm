@@ -143,10 +143,13 @@ sub get_site_subscribers
 
 sub get_public_posts
 {
-    my ($self, $user, $site) = (shift, shift, shift);
-    my %options = (page => 1, @_);
-    $user ||= 'me';
-    $site ||= 'primary';
+    my $self = shift;
+    my %opts = (
+        page => 1,
+        @_
+    );
+    my $site = delete($opts{site}) || 'primary';
+    my $user = delete($opts{user}) || 'me';
 
     my $request = Posterous::Request->new(
         GET => sprintf('%s/api/2/users/%s/sites/%s/posts/public', baseurl, $user, $site)
@@ -154,7 +157,7 @@ sub get_public_posts
 
     # XXX Do I need this here? I think this call requires no auth
     $self->_prepare_request($request);
-    $request->add_get_pararms(\%options);
+    $request->add_get_params(\%opts);
     return $self->_fetch($request);
 }
 
