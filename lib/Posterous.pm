@@ -141,6 +141,18 @@ sub get_site_subscribers
     return $self->_fetch($request);
 }
 
+sub subscribe_to_site
+{
+    my ($self, $site, $user) = @_;
+    $user ||= '1';
+    $site ||= 'primary';
+    my $request = Posterous::Request->new(
+        GET => sprintf("%s/api/2/users/$user/sites/$site/subscribe", baseurl, $user, $site)
+    );
+    $self->_prepare_request($request);
+    return $self->_fetch($request);
+}
+
 sub get_public_posts
 {
     my $self = shift;
@@ -229,6 +241,15 @@ Returns a boolean depending on whether or not the site was successfully deleted.
 
 Fetch the list of subscribers to $site for $user. $user defaults to 'me' and
 $site defaults to 'primary.' $site can either be a hostname or site id.
+
+=head2 subscribe_to_site ( $site, $user )
+
+Subscribes the current user to the specified site. $site defaults to 'primary,'
+but that doesn't make particular sense (to be subscribed to your own primary
+site), so you should probably specify a $site. $user defaults to '1,' and the
+Posterous API docs don't specify whether or not a user option is acceptable. It
+probably isn't, but I'm leaving the $user option in just in case the API
+changes in the future.
 
 =head1 POSTEROUS API: POSTS
 

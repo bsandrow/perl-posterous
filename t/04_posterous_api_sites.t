@@ -1,4 +1,4 @@
-use Test::More tests => 40;
+use Test::More tests => 43;
 use Try::Tiny;
 use Posterous;
 
@@ -254,4 +254,30 @@ use Posterous;
         [ 'testing', 'passthru', 'of', '_fetch()', 'return', 'value' ],
         "Testing that get_site_subscribers is passing through _fetch() return val"
     );
+}
+
+########################################
+#### Posterous::subscribe_to_site()
+####
+{
+    no warnings 'redefine';
+
+    my $request;
+    my $fetch_return = { retval => 666 };
+    local *Posterous::_fetch = sub { $request = $_[1]; return $fetch_return };
+    local *Posterous::api_token = sub { return 'aPiToKeN' };
+
+    my $api = Posterous->new(email => 'test@example.com', 'password' => 'tru');
+
+    $api->subscribe_to_site();
+    ok($request->uri()->path() eq '/api/2/users/1/sites/primary/subscribe',
+        'subscribe_to_site() defaults $user to "1" and $site to "primary"');
+
+    $api->subscribe_to_site('test-site');
+    ok($request->uri()->path() eq '/api/2/users/1/sites/test-site/subscribe',
+        'subscribe_to_site() $site options overrides default of "primary"');
+
+    $api->subscribe_to_site('test-site-2', 'test-user');
+    ok($request->uri()->path() eq '/api/2/users/test-user/sites/test-site-2/subscribe',
+        'subscribe_to_site() $site options overrides default of "primary" and $user option overrides default of "1"');
 }
