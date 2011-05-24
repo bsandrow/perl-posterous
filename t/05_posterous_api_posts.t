@@ -1,4 +1,4 @@
-use Test::More tests => 10;
+use Test::More tests => 15;
 use Try::Tiny;
 use Posterous;
 
@@ -57,4 +57,35 @@ use Posterous;
     catch   { $croaked = 1                 };
     ok($croaked,
         'get_posts() croaks when noauth is true and public is false');
+}
+
+########################################
+#### Posterous::get_post()
+####
+{
+    no warnings 'redefine';
+
+    my $request;
+    my $fetch_return = { retval => 666 };
+    local *Posterous::_fetch = sub { $request = $_[1]; return $fetch_return };
+    local *Posterous::api_token = sub { return 'aPiToKeN' };
+
+    my $api = Posterous->new(email => 'test@example.com', 'password' => 'tru');
+
+    my $croaked = 0;
+    try     { $api->get_post()  }
+    catch   { $croaked = 1      };
+    ok($croaked, 'get_post() dies when no post_id is given');
+
+    $api->get_post(22);
+    ok($request->uri->path() eq '/api/2/users/me/sites/primary/posts/22',
+        'get_post() sets the correct defaults, path and inserts post_id correctly');
+    ok($request->header('Authorization'),
+        'get_post() sets the auth headers');
+    ok($request->uri()->query() eq 'api_token=aPiToKeN',
+        'get_post() sets api_token in params');
+
+    $api->get_post(25, 1234);
+    ok($request->uri->path() eq '/api/2/users/me/sites/1234/posts/25',
+        'get_post() sets the defaults $user correctly, inserts $post_id and $site correctly');
 }

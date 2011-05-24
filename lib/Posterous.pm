@@ -194,6 +194,21 @@ sub get_posts
     return $self->_fetch($request);
 }
 
+sub get_post
+{
+    my ($self, $post_id, $site, $user) = @_;
+    $site ||= 'primary';
+    $user ||= 'me';
+
+    croak "A post id is required" unless $post_id;
+
+    my $request = Posterous::Request->new(
+        GET => sprintf('%s/api/2/users/%s/sites/%s/posts/%s', baseurl, $user, $site, $post_id)
+    );
+    $self->_prepare_request($request);
+    return $self->_fetch($request);
+}
+
 __PACKAGE__->meta()->make_immutable();
 
 1;
@@ -343,6 +358,30 @@ Retrieve posts with this tag
 =back
 
 Returns the parsed JSON returned from the API. Otherwise, returns undef.
+
+=head2 get_post ( $post_id, $site, $user )
+
+Fetches a specific post.
+
+=over 2
+
+=item $post_id
+
+Required. The ID of the post to fetch.
+
+=item $site
+
+Specify the site to fetch the post from. Optional. Defaults to 'primary,'
+otherwise needs to be a site ID.
+
+=item $user
+
+Severely optional. Defaults to 'me.' 'me' is the only value that the API docs
+talk about, but the request URL follows the pattern of some other URLs where
+the $user can be selected. I've left this in to allow for some flexibility if
+$user is ever needed as an option.
+
+=back
 
 =head1 AUTHOR
 
