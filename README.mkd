@@ -1,0 +1,169 @@
+# NAME
+
+Posterous - API access to posterous.com
+
+# SYNOPSIS
+
+    use strict;
+    use Posterous;
+
+    my $api = Posterous->new(email => 'user@example.com', password => 'MyPuppEDog');
+
+    my $site = $api->get_site(); # your primary site
+
+    my $posts = $api->get_public_posts(site => $site->{id}, page => 2);
+
+# DESCRIPTION
+
+A library for accessing Posterous through the Posterous API. Currently
+incomplete, but all of the existing functions should work and are fully
+unit-tested (as much as they actually can be without actually hitting
+Posterous' servers).
+
+# POSTEROUS API: AUTH
+
+## fetch_api_token
+
+Uses the email-password combination to grab an API access token from the
+Posterous API. Rather than directly passing back the JSON-parsed structure,
+pulls the api_token out of it (and therefore will return undef if it's not
+there).
+
+# POSTEROUS API: SITES
+
+## sites ( $user )
+
+Returns a list of data structures that each represents a site that is
+associated with the specified user. $user defaults to 'me' (which is a shortcut
+for the currently authorized user).
+
+## site ( $user, $site )
+
+Returns a structured dataset for the specificed user/site combination. $user
+defaults to the shortcut 'me' and $site defaults to the shortcut 'primary.'
+
+## create_site ( %options )
+
+Creates a posterous site for a particular user.
+
+Options:
+
+    name        The name of the site (required)
+    is_private  A boolean describing if the site if private or not. (default: 0)
+    hostname    The sub-domain part of the full domain (e.g.
+                {hostname}.posterous.com)
+    user        The user to create the site for. (default: me)
+
+Returns a data structure like:
+
+    {
+        "name"              : "twoism's posterous",
+        "is_private"        : false,
+        "full_hostname"     : "twoism.posterous.com",
+        "posts_count"       : 224,
+        "id"                : 1752789,
+        "comment_permission": 2,
+        "posts_url"         : "/api/2/users/637118/sites/1752789/posts"
+    }
+
+## delete_site ( $site, $user )
+
+Delete the site specified by $site and $user. $user defaults to 'me,' but $site
+is required. I feel that it would be too easy to accidentally perform an
+unintented destructive operation if $site defaulted to 'primary.' (And it would
+be especially destructive because, presumably, you primary site is the most
+important one to you). $site can either be the site id or hostname.
+
+Returns a boolean depending on whether or not the site was successfully deleted.
+
+## get_site_subscribers ( $user, $site )
+
+Fetch the list of subscribers to $site for $user. $user defaults to 'me' and
+$site defaults to 'primary.' $site can either be a hostname or site id.
+
+## subscribe_to_site ( $site, $user )
+
+Subscribes the current user to the specified site. $site defaults to 'primary,'
+but that doesn't make particular sense (to be subscribed to your own primary
+site), so you should probably specify a $site. $user defaults to '1,' and the
+Posterous API docs don't specify whether or not a user option is acceptable. It
+probably isn't, but I'm leaving the $user option in just in case the API
+changes in the future.
+
+## unsubscribe_from_site ( $site, $user )
+
+Unsubscribes the current user from the specified site. $site defaults to
+'primary,' though you'll probably just want to set this to something. $user is
+just here for added flexibility, and is not indended to be used at this time.
+$user defaults to '1' (which is the only documented value in the API docs).
+
+# POSTEROUS API: POSTS
+
+## get_posts ( %options )
+
+Fetches all posts for a site. %options are:
+
+- public
+
+Controls whether or not to only operate on public posts.
+
+- noauth
+
+Controls whether or not the API request will be (or attempt to be)
+authenticated. Since this API call doesn't require authentication (the posts
+are _public_ after all), this allows access to this API call without any auth
+info. Defaults to 0.
+
+__public__ option is required to be true when using this option, as public posts
+are the only ones that don't require authentication.
+
+- user
+
+The user whose site to fetch posts from. Defaults to 'me' if authenticating,
+otherwise requires a value.
+
+- site
+
+The site to fetch posts from. Defaults to 'primary.'
+
+- page
+
+The page number for the results set. Defaults to 1.
+
+- since_id
+
+Retrieve posts created after this id
+
+- tag
+
+Retrieve posts with this tag
+
+Returns the parsed JSON returned from the API. Otherwise, returns undef.
+
+## get_post ( $post_id, $site, $user )
+
+Fetches a specific post.
+
+- $post_id
+
+Required. The ID of the post to fetch.
+
+- $site
+
+Specify the site to fetch the post from. Optional. Defaults to 'primary,'
+otherwise needs to be a site ID.
+
+- $user
+
+Severely optional. Defaults to 'me.' 'me' is the only value that the API docs
+talk about, but the request URL follows the pattern of some other URLs where
+the $user can be selected. I've left this in to allow for some flexibility if
+$user is ever needed as an option.
+
+# AUTHOR
+
+Brandon Sandrowicz <bsandrow@gmail.com>
+
+# LICENSE
+
+Licensed under the MIT license. See LICENSE file in distribution.
