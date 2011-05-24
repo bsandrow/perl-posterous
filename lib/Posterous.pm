@@ -197,6 +197,18 @@ __PACKAGE__->meta()->make_immutable();
 
 Posterous - API access to posterous.com
 
+=head1 SYNOPSIS
+
+    use strict;
+    use Posterous;
+
+    my $api = Posterous->new(email => 'user@example.com', password => 'MyPuppEDog');
+
+    my $site = $api->get_site(); # your primary site
+
+    my $posts = $api->get_public_posts(site => $site->{id}, page => 2);
+
+
 =head1 POSTEROUS API: AUTH
 
 =head2 fetch_api_token
@@ -313,5 +325,13 @@ Retrieve posts with this tag
 =back
 
 Returns the parsed JSON returned from the API. Otherwise, returns undef.
+
+=head1 AUTHOR
+
+Brandon Sandrowicz <bsandrow@gmail.com>
+
+=head1 LICENSE
+
+Licensed under the MIT license. See LICENSE file in distribution.
 
 =cut

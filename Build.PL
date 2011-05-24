@@ -5,7 +5,7 @@ use warnings;
 use Module::Build;
 
 Module::Build->new(
-    dist_author         => 'Brandon Sandrowicz <brandon@sandrowicz.org>',
+    dist_author         => 'Brandon Sandrowicz <bsandrow@gmail.com>',
     module_name         => 'Posterous',
     dist_name           => 'Posterous',
     dist_version        => 0.5,
