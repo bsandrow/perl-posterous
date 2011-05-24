@@ -208,6 +208,12 @@ Posterous - API access to posterous.com
 
     my $posts = $api->get_public_posts(site => $site->{id}, page => 2);
 
+=head1 DESCRIPTION
+
+A library for accessing Posterous through the Posterous API. Currently
+incomplete, but all of the existing functions should work and are fully
+unit-tested (as much as they actually can be without actually hitting
+Posterous' servers).
 
 =head1 POSTEROUS API: AUTH
 
