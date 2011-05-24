@@ -165,22 +165,27 @@ sub unsubscribe_from_site
     return $self->_fetch($request);
 }
 
-sub get_public_posts
+sub get_posts
 {
     my $self = shift;
     my %opts = (
+        public => 0,
         noauth => 0,
         page => 1,
         @_
     );
-    my $site = delete($opts{site}) || 'primary';
-    my $user = delete($opts{user}) || 'me';
+    my $site    = delete($opts{site}) || 'primary';
+    my $user    = delete($opts{user}) || 'me';
+    my $public  = delete($opts{public}) ? '/public' : '';
+
+    croak "Cannot turn off authentication unless only fetching public posts"
+        if $opts{noauth} && !$public;
 
     croak "'user = me' makes no sense if with no authentication."
         if $user eq 'me' && $opts{noauth};
 
     my $request = Posterous::Request->new(
-        GET => sprintf('%s/api/2/users/%s/sites/%s/posts/public', baseurl, $user, $site)
+        GET => sprintf('%s/api/2/users/%s/sites/%s/posts%s', baseurl, $user, $site, $public)
     );
 
     $self->_prepare_request($request) unless delete $opts{noauth};
@@ -294,11 +299,15 @@ $user defaults to '1' (which is the only documented value in the API docs).
 
 =head1 POSTEROUS API: POSTS
 
-=head2 get_public_posts ( %options )
+=head2 get_posts ( %options )
 
-Fetches all public posts for a site. %options are:
+Fetches all posts for a site. %options are:
 
 =over 3
+
+=item public
+
+Controls whether or not to only operate on public posts.
 
 =item noauth
 
@@ -306,6 +315,9 @@ Controls whether or not the API request will be (or attempt to be)
 authenticated. Since this API call doesn't require authentication (the posts
 are I<public> after all), this allows access to this API call without any auth
 info. Defaults to 0.
+
+B<public> option is required to be true when using this option, as public posts
+are the only ones that don't require authentication.
 
 =item user
 
