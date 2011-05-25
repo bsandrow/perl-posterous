@@ -39,20 +39,21 @@ for the currently authorized user).
 
 ## site ( $user, $site )
 
-Returns a structured dataset for the specificed user/site combination. $user
-defaults to the shortcut 'me' and $site defaults to the shortcut 'primary.'
+Returns a dataset that describes the site.
+
+- __$user__ - The user. (Default: me)
+- __$site__ - Defaults to 'primary'
 
 ## create_site ( %options )
 
-Creates a posterous site for a particular user.
+Create a new posterous site for an existing user.
 
 Options:
 
-    name        The name of the site (required)
-    is_private  A boolean describing if the site if private or not. (default: 0)
-    hostname    The sub-domain part of the full domain (e.g.
-                {hostname}.posterous.com)
-    user        The user to create the site for. (default: me)
+- __name__ - THe name of the site. Required.
+- __is_private__ - A boolean describing if the site is private or not. (Default: 0)
+- __hostname__ - The sub-domain part of the full domain (e.g. _hostname_.posterous.com)
+- __user__ - The user to create the site for. (Default: me)
 
 Returns a data structure like:
 
@@ -78,24 +79,30 @@ Returns a boolean depending on whether or not the site was successfully deleted.
 
 ## get_site_subscribers ( $user, $site )
 
-Fetch the list of subscribers to $site for $user. $user defaults to 'me' and
-$site defaults to 'primary.' $site can either be a hostname or site id.
+Fetch the list of subscribers to $site for $user.
+
+- __$user__ - The user. Defaults to 'me'.
+- __$site__ - Defaults to 'primary.'
 
 ## subscribe_to_site ( $site, $user )
 
-Subscribes the current user to the specified site. $site defaults to 'primary,'
-but that doesn't make particular sense (to be subscribed to your own primary
-site), so you should probably specify a $site. $user defaults to '1,' and the
-Posterous API docs don't specify whether or not a user option is acceptable. It
-probably isn't, but I'm leaving the $user option in just in case the API
-changes in the future.
+Subscribes the current user to the specified site.
+
+- __$site__ - The id of the site to subscribe to (or the shortcut 'primary').
+Defaults to 'primary,' though that doesn't make too much sense for the use-case
+of this API call.
+- __$user__ - The user field. Just here for added flexibility. Defaults to '1'
+which is the only value that the API documents mention.
 
 ## unsubscribe_from_site ( $site, $user )
 
-Unsubscribes the current user from the specified site. $site defaults to
-'primary,' though you'll probably just want to set this to something. $user is
-just here for added flexibility, and is not indended to be used at this time.
-$user defaults to '1' (which is the only documented value in the API docs).
+Unsubscribes the current user from the specified site. 
+
+- __$site__ - The id of the site to unsubscribe from (or the shortcut 'primary').
+Defaults to 'primary,' though that doesn't make too much sense for the use-case
+of this API call.
+- __$user__ - The user field. Just here for added flexibility. Defaults to '1'
+which is the only value that the API documents mention.
 
 # POSTEROUS API: POSTS
 
@@ -103,40 +110,19 @@ $user defaults to '1' (which is the only documented value in the API docs).
 
 Fetches all posts for a site. %options are:
 
-- public
-
-Controls whether or not to only operate on public posts.
-
-- noauth
-
-Controls whether or not the API request will be (or attempt to be)
-authenticated. Since this API call doesn't require authentication (the posts
-are _public_ after all), this allows access to this API call without any auth
-info. Defaults to 0.
-
-__public__ option is required to be true when using this option, as public posts
-are the only ones that don't require authentication.
-
-- user
-
-The user whose site to fetch posts from. Defaults to 'me' if authenticating,
-otherwise requires a value.
-
-- site
-
-The site to fetch posts from. Defaults to 'primary.'
-
-- page
-
-The page number for the results set. Defaults to 1.
-
-- since_id
-
-Retrieve posts created after this id
-
-- tag
-
-Retrieve posts with this tag
+- __public__ - Controls whether or not to only operate on public posts.
+- __noauth__ - Controls whether or not the API request will be (or attempt to be)
+authenticated. Since the API call to get public posts doesn't require
+authentication, it makes sense that someone might want to actually use it as
+advertised. This option is thus here to be paired with the __public__ option. It
+only makes sense when __public__ is true, and the call will croak when __noauth__
+is true if __public__ is not true. Defaults to 0.
+- __user__ - The user whose site to fetch posts from. Defaults to 'me' if
+authenticating, otherwise requires a value.
+- __site__ - The site to fetch posts from. Defaults to 'primary.'
+- __page__ - The page number for the results set. Defaults to 1.
+- __since_id__ - Retrieve posts created after this id
+- __tag__ - Retrieve posts with this tag
 
 Returns the parsed JSON returned from the API. Otherwise, returns undef.
 
@@ -144,18 +130,10 @@ Returns the parsed JSON returned from the API. Otherwise, returns undef.
 
 Fetches a specific post.
 
-- $post_id
-
-Required. The ID of the post to fetch.
-
-- $site
-
-Specify the site to fetch the post from. Optional. Defaults to 'primary,'
-otherwise needs to be a site ID.
-
-- $user
-
-Severely optional. Defaults to 'me.' 'me' is the only value that the API docs
+- __$post_id__ - Required. The ID of the post to fetch.
+- __$site__ - Specify the site to fetch the post from. Optional. Defaults to
+'primary,' otherwise needs to be a site ID.
+- __$user__ - Severely optional. Defaults to 'me.' 'me' is the only value that the API docs
 talk about, but the request URL follows the pattern of some other URLs where
 the $user can be selected. I've left this in to allow for some flexibility if
 $user is ever needed as an option.

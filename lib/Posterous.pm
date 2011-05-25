@@ -254,20 +254,45 @@ for the currently authorized user).
 
 =head2 site ( $user, $site )
 
-Returns a structured dataset for the specificed user/site combination. $user
-defaults to the shortcut 'me' and $site defaults to the shortcut 'primary.'
+Returns a dataset that describes the site.
+
+=over
+
+=item *
+
+B<$user> - The user. (Default: me)
+
+=item *
+
+B<$site> - Defaults to 'primary'
+
+=back
 
 =head2 create_site ( %options )
 
-Creates a posterous site for a particular user.
+Create a new posterous site for an existing user.
 
 Options:
 
-    name        The name of the site (required)
-    is_private  A boolean describing if the site if private or not. (default: 0)
-    hostname    The sub-domain part of the full domain (e.g.
-                {hostname}.posterous.com)
-    user        The user to create the site for. (default: me)
+=over
+
+=item *
+
+B<name> - THe name of the site. Required.
+
+=item *
+
+B<is_private> - A boolean describing if the site is private or not. (Default: 0)
+
+=item *
+
+B<hostname> - The sub-domain part of the full domain (e.g. I<hostname>.posterous.com)
+
+=item *
+
+B<user> - The user to create the site for. (Default: me)
+
+=back
 
 Returns a data structure like:
 
@@ -293,24 +318,57 @@ Returns a boolean depending on whether or not the site was successfully deleted.
 
 =head2 get_site_subscribers ( $user, $site )
 
-Fetch the list of subscribers to $site for $user. $user defaults to 'me' and
-$site defaults to 'primary.' $site can either be a hostname or site id.
+Fetch the list of subscribers to $site for $user.
+
+=over
+
+=item *
+
+B<$user> - The user. Defaults to 'me'.
+
+=item *
+
+B<$site> - Defaults to 'primary.'
+
+=back
 
 =head2 subscribe_to_site ( $site, $user )
 
-Subscribes the current user to the specified site. $site defaults to 'primary,'
-but that doesn't make particular sense (to be subscribed to your own primary
-site), so you should probably specify a $site. $user defaults to '1,' and the
-Posterous API docs don't specify whether or not a user option is acceptable. It
-probably isn't, but I'm leaving the $user option in just in case the API
-changes in the future.
+Subscribes the current user to the specified site.
+
+=over
+
+=item *
+
+B<$site> - The id of the site to subscribe to (or the shortcut 'primary').
+Defaults to 'primary,' though that doesn't make too much sense for the use-case
+of this API call.
+
+=item *
+
+B<$user> - The user field. Just here for added flexibility. Defaults to '1'
+which is the only value that the API documents mention.
+
+=back
 
 =head2 unsubscribe_from_site ( $site, $user )
 
-Unsubscribes the current user from the specified site. $site defaults to
-'primary,' though you'll probably just want to set this to something. $user is
-just here for added flexibility, and is not indended to be used at this time.
-$user defaults to '1' (which is the only documented value in the API docs).
+Unsubscribes the current user from the specified site. 
+
+=over
+
+=item *
+
+B<$site> - The id of the site to unsubscribe from (or the shortcut 'primary').
+Defaults to 'primary,' though that doesn't make too much sense for the use-case
+of this API call.
+
+=item *
+
+B<$user> - The user field. Just here for added flexibility. Defaults to '1'
+which is the only value that the API documents mention.
+
+=back
 
 =head1 POSTEROUS API: POSTS
 
@@ -318,42 +376,41 @@ $user defaults to '1' (which is the only documented value in the API docs).
 
 Fetches all posts for a site. %options are:
 
-=over 3
+=over
 
-=item public
+=item *
 
-Controls whether or not to only operate on public posts.
+B<public> - Controls whether or not to only operate on public posts.
 
-=item noauth
+=item *
 
-Controls whether or not the API request will be (or attempt to be)
-authenticated. Since this API call doesn't require authentication (the posts
-are I<public> after all), this allows access to this API call without any auth
-info. Defaults to 0.
+B<noauth> - Controls whether or not the API request will be (or attempt to be)
+authenticated. Since the API call to get public posts doesn't require
+authentication, it makes sense that someone might want to actually use it as
+advertised. This option is thus here to be paired with the B<public> option. It
+only makes sense when B<public> is true, and the call will croak when B<noauth>
+is true if B<public> is not true. Defaults to 0.
 
-B<public> option is required to be true when using this option, as public posts
-are the only ones that don't require authentication.
+=item *
 
-=item user
+B<user> - The user whose site to fetch posts from. Defaults to 'me' if
+authenticating, otherwise requires a value.
 
-The user whose site to fetch posts from. Defaults to 'me' if authenticating,
-otherwise requires a value.
+=item *
 
-=item site
+B<site> - The site to fetch posts from. Defaults to 'primary.'
 
-The site to fetch posts from. Defaults to 'primary.'
+=item *
 
-=item page
+B<page> - The page number for the results set. Defaults to 1.
 
-The page number for the results set. Defaults to 1.
+=item *
 
-=item since_id
+B<since_id> - Retrieve posts created after this id
 
-Retrieve posts created after this id
+=item *
 
-=item tag
-
-Retrieve posts with this tag
+B<tag> - Retrieve posts with this tag
 
 =back
 
@@ -363,20 +420,20 @@ Returns the parsed JSON returned from the API. Otherwise, returns undef.
 
 Fetches a specific post.
 
-=over 2
+=over
 
-=item $post_id
+=item *
 
-Required. The ID of the post to fetch.
+B<$post_id> - Required. The ID of the post to fetch.
 
-=item $site
+=item *
 
-Specify the site to fetch the post from. Optional. Defaults to 'primary,'
-otherwise needs to be a site ID.
+B<$site> - Specify the site to fetch the post from. Optional. Defaults to
+'primary,' otherwise needs to be a site ID.
 
-=item $user
+=item *
 
-Severely optional. Defaults to 'me.' 'me' is the only value that the API docs
+B<$user> - Severely optional. Defaults to 'me.' 'me' is the only value that the API docs
 talk about, but the request URL follows the pattern of some other URLs where
 the $user can be selected. I've left this in to allow for some flexibility if
 $user is ever needed as an option.
